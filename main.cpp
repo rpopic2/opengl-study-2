@@ -58,10 +58,10 @@ int main() {
 
     glViewport(0, 0, 400, 400);
 
-    GLfloat positions[] = {
+    GLfloat verticies[] = {
         -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.5f, 0.0f,   0.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.0f,  0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
 
         0.0f, -0.5f, 0.0f,  0.5f, 0.5f, 0.0f,
         0.25f, 0.0f, 0.0f,  0.0f, 0.5f, 0.5f,
@@ -85,7 +85,7 @@ int main() {
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, GL_STATIC_DRAW);
@@ -100,10 +100,9 @@ int main() {
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    GLuint uniID = glGetUniformLocation(shader_program, "scale");
+    GLint uniID = glGetUniformLocation(shader_program, "scale");
 
     glClearColor(1, 1, 1, 1);
-
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
