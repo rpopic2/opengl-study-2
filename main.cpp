@@ -100,15 +100,18 @@ int main() {
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+    GLuint uniID = glGetUniformLocation(shader_program, "scale");
+
     glClearColor(1, 1, 1, 1);
 
-    glUseProgram(shader_program);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glUseProgram(shader_program);
+        glUniform1f(uniID, 1.5f);
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, NULL);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
