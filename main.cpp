@@ -59,13 +59,13 @@ int main() {
     glViewport(0, 0, 400, 400);
 
     GLfloat positions[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.5f, 0.0f,   0.0f, 1.0f, 0.0f,
+        0.5f, -0.5f, 0.0f,  0.5f, 0.0f, 1.0f,
 
-        0.0f, -0.5f, 0.0f,
-        0.25f, 0.0f, 0.0f,
-        -0.25f, 0.0f, 0.0f,
+        0.0f, -0.5f, 0.0f,  0.5f, 0.5f, 0.0f,
+        0.25f, 0.0f, 0.0f,  0.0f, 0.5f, 0.5f,
+        -0.25f, 0.0f, 0.0f, 0.5f, 0.0f, 0.5f,
     };
 
     GLint indicies[] = {
@@ -90,8 +90,10 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 
     // unbind. order matters
     glBindBuffer(GL_ARRAY_BUFFER, 0);
