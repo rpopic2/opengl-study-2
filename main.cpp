@@ -2,8 +2,11 @@
 #include <iostream>
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
+#include "glm/glm.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
-std::string read_source(const std::string &filename) {
+static std::string read_source(const std::string &filename) {
     std::ifstream file(filename, std::ios::ate);
     if (!file.is_open()) {
         std::cout << "Failed to open " << filename << std::endl;
@@ -26,7 +29,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    auto *window =glfwCreateWindow(800, 400, "Hello World", NULL, NULL);
+    auto *window =glfwCreateWindow(400, 400, "Hello World", NULL, NULL);
     if (window == nullptr) {
         glfwTerminate();
         std::cout << "Failed to create glfw window" << std::endl;
@@ -42,16 +45,26 @@ int main() {
     glShaderSource(vert_shader, 1, &psource, NULL);
     glCompileShader(vert_shader);
 
+    char buf[1024];
+    GLsizei len;
+
+
     auto frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
     source = read_source("shader.frag");
     psource = source.c_str();
     glShaderSource(frag_shader, 1, &psource, NULL);
     glCompileShader(frag_shader);
 
+    glGetShaderInfoLog(frag_shader, 1024, &len, buf);
+
     auto shader_program = glCreateProgram();
     glAttachShader(shader_program, vert_shader);
     glAttachShader(shader_program, frag_shader);
     glLinkProgram(shader_program);
+
+
+    // glGetProgramInfoLog(shader_program, 1024, &len, buf);
+    std::cout << buf << std::endl;
 
     glDeleteShader(vert_shader);
     glDeleteShader(frag_shader);
@@ -59,19 +72,15 @@ int main() {
     glViewport(0, 0, 400, 400);
 
     GLfloat verticies[] = {
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.5f, 0.0f,   0.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
-
-        0.0f, -0.5f, 0.0f,  0.5f, 0.5f, 0.0f,
-        0.25f, 0.0f, 0.0f,  0.0f, 0.5f, 0.5f,
-        -0.25f, 0.0f, 0.0f, 0.5f, 0.0f, 0.5f,
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0.0f,  0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
     };
 
     GLint indicies[] = {
-        0, 3, 5,
-        3, 2, 4,
-        5, 4, 1
+        0, 1, 3,
+        3, 1, 2,
     };
 
     GLuint vbo;
@@ -90,32 +99,64 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
     // unbind. order matters
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //glBindVertexArray(0);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    //
 
-    GLint uniID = glGetUniformLocation(shader_program, "scale");
+    // GLint uniID = glGetUniformLocation(shader_program, "scale");
+
+    stbi_set_flip_vertically_on_load(true);
+    int width_img, height_img, num_col_ch;
+    unsigned char *tex_buf = stbi_load("ring.png", &width_img, &height_img, &num_col_ch, 0);
+
+    GLuint tex;
+    glGenTextures(1, &tex);
+
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_img, height_img, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_buf);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    GLint tex0_loc = glGetUniformLocation(shader_program, "tex0");
+
+    glUseProgram(shader_program);
+
+
+    stbi_image_free(tex_buf);
+
+    glUniform1i(tex0_loc, 0);
 
     glClearColor(1, 1, 1, 1);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shader_program);
-        glUniform1f(uniID, 1.5f);
+        // glUniform1f(uniID, 1.5f);
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, NULL);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    glDeleteTextures(1, &tex);
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ebo);
